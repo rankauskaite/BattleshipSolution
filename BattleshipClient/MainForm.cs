@@ -11,13 +11,13 @@ namespace BattleshipClient
 {
     public class MainForm : Form
     {
-        private TextBox txtServer;
+       private TextBox txtServer;
         private TextBox txtName;
         private Button btnConnect;
         private Button btnRandomize;
         private Button btnReady;
         private Button btnPlaceShips;
-        private Button btnGameOver; // Naujas mygtukas
+        private Button btnGameOver;
         private Label lblStatus;
         private GameBoard ownBoard;
         private GameBoard enemyBoard;
@@ -49,52 +49,91 @@ namespace BattleshipClient
         private void InitializeComponents()
         {
             this.Text = "Battleship Client";
-            this.ClientSize = new Size(950, 600);
+            this.ClientSize = new Size(1000, 700);
             this.BackColor = ColorTranslator.FromHtml("#f8f9fa");
+            this.AutoScaleMode = AutoScaleMode.Dpi; // svarbu dėl DPI
 
-            Label l1 = new Label { Text = "Server (ws):", Location = new Point(10, 10), AutoSize = true };
-            txtServer = new TextBox { Text = "ws://localhost:5000/ws/", Location = new Point(100, 10), Width = 300 };
-            Label l2 = new Label { Text = "Name:", Location = new Point(420, 10), AutoSize = true };
-            txtName = new TextBox { Text = "Player", Location = new Point(470, 10), Width = 120 };
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 3
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // viršus prisitaiko
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // lentos
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120)); // apačia laivams
+            this.Controls.Add(layout);
 
-            btnConnect = new Button { Text = "Connect", Location = new Point(600, 8), Width = 80, Height = 30 };
-            btnConnect.Click += BtnConnect_Click;
+            // ---- Viršutinė juosta (2 eilės, abi AutoSize) ----
+            var topGrid = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 2,
+                AutoSize = true,
+                GrowStyle = TableLayoutPanelGrowStyle.AddRows
+            };
+            topGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70));
+            topGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+            topGrid.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            topGrid.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            btnRandomize = new Button { Text = "Randomize ships", Location = new Point(700, 8), Width = 130, Height = 30 };
-            btnRandomize.Click += BtnRandomize_Click;
+            // 1 eilė: Server + Name
+            var row1 = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false, AutoSize = true };
+            var l1 = new Label { Text = "Server (ws):", AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
+            txtServer = new TextBox { Text = "ws://localhost:5000/ws/", Width = 260, Margin = new Padding(3, 3, 10, 3) };
+            var l2 = new Label { Text = "Name:", AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
+            txtName = new TextBox { Text = "Player", Width = 130, Margin = new Padding(3) };
+            row1.Controls.AddRange(new Control[] { l1, txtServer, l2, txtName });
+            topGrid.Controls.Add(row1, 0, 0);
 
-            btnPlaceShips = new Button { Text = "Place ships", Location = new Point(560, 44), Width = 130, Height = 30 };
+            // Statusas dešinėje per abi eiles
+            lblStatus = new Label { Text = "Not connected", AutoSize = true, Anchor = AnchorStyles.Right | AnchorStyles.Top, Margin = new Padding(3, 6, 3, 3) };
+            topGrid.SetRowSpan(lblStatus, 2);
+            topGrid.Controls.Add(lblStatus, 1, 0);
+
+            // 2 eilė: mygtukai (be fiksuoto Height)
+            var row2 = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = true, AutoSize = true };
+            btnConnect    = new Button { Text = "Connect", AutoSize = true, Margin = new Padding(3) };
+            btnRandomize  = new Button { Text = "Randomize ships", AutoSize = true, Margin = new Padding(3) };
+            btnPlaceShips = new Button { Text = "Place ships", AutoSize = true, Margin = new Padding(3) };
+            btnReady      = new Button { Text = "Ready", AutoSize = true, Margin = new Padding(3), Enabled = false };
+            btnGameOver   = new Button { Text = "Game Over", AutoSize = true, Margin = new Padding(3), Visible = false };
+
+            btnConnect.Click    += BtnConnect_Click;
+            btnRandomize.Click  += BtnRandomize_Click;
             btnPlaceShips.Click += BtnPlaceShips_Click;
+            btnReady.Click      += BtnReady_Click;
+            btnGameOver.Click   += BtnGameOver_Click;
 
-            btnReady = new Button { Text = "Ready", Location = new Point(700, 44), Width = 130, Height = 30 };
-            btnReady.Click += BtnReady_Click;
+            row2.Controls.AddRange(new Control[] { btnConnect, btnRandomize, btnPlaceShips, btnReady, btnGameOver });
+            topGrid.Controls.Add(row2, 0, 1);
 
-            btnGameOver = new Button { Text = "Game Over", Location = new Point(400, 44), Width = 100, Height = 30, Visible = false };
+            layout.SetColumnSpan(topGrid, 2);
+            layout.Controls.Add(topGrid, 0, 0);
 
-            lblStatus = new Label { Text = "Not connected", Location = new Point(10, 40), AutoSize = true };
-
-            ownBoard = new GameBoard { Location = new Point(10, 80) };
-            enemyBoard = new GameBoard { Location = new Point(480, 80) };
+            // ---- Lentos ----
+            ownBoard = new GameBoard { Dock = DockStyle.Fill, MinimumSize = new Size(400, 400) };
+            enemyBoard = new GameBoard { Dock = DockStyle.Fill, MinimumSize = new Size(400, 400) };
             enemyBoard.CellClicked += EnemyBoard_CellClicked;
+            layout.Controls.Add(ownBoard, 0, 1);
+            layout.Controls.Add(enemyBoard, 1, 1);
 
+            // ---- Apačia: laivų panelė ----
             shipPanel = new FlowLayoutPanel
             {
-                Location = new Point(30, 480),
-                Size = new Size(450, 100),
+                Dock = DockStyle.Fill,
                 AutoScroll = true,
                 BorderStyle = BorderStyle.FixedSingle,
                 Visible = false
             };
-
-            this.Controls.Add(shipPanel);
-            this.Controls.AddRange(new Control[] {
-                l1, txtServer, l2, txtName,
-                btnConnect, btnRandomize, btnPlaceShips, btnReady, btnGameOver,
-                lblStatus, ownBoard, enemyBoard
-            });
-
-            btnReady.Enabled = false;
+            layout.SetColumnSpan(shipPanel, 2);
+            layout.Controls.Add(shipPanel, 0, 2);
         }
+
+
 
         private async void BtnConnect_Click(object sender, EventArgs e)
         {
@@ -406,7 +445,6 @@ namespace BattleshipClient
                 btnReady.Enabled = false;
                 placingShips = false;
                 isMyTurn = false;
-
                 lblStatus.Text = "Waiting for new game...";
                 var register = new { type = "register", payload = new { playerName = txtName.Text } };
                 await net.SendAsync(register);

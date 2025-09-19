@@ -1,34 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\rugil\\Desktop\\Universitetas\\7 semestras\\Objektinis programų projektavimas\\BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj": {}
+    "C:\\Users\\lauri\\Documents\\GitHub\\OPP-BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj": {}
   },
   "projects": {
-    "C:\\Users\\rugil\\Desktop\\Universitetas\\7 semestras\\Objektinis programų projektavimas\\BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj": {
+    "C:\\Users\\lauri\\Documents\\GitHub\\OPP-BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\rugil\\Desktop\\Universitetas\\7 semestras\\Objektinis programų projektavimas\\BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj",
+        "projectUniqueName": "C:\\Users\\lauri\\Documents\\GitHub\\OPP-BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj",
         "projectName": "BattleshipServer",
-        "projectPath": "C:\\Users\\rugil\\Desktop\\Universitetas\\7 semestras\\Objektinis programų projektavimas\\BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj",
-        "packagesPath": "C:\\Users\\rugil\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\rugil\\Desktop\\Universitetas\\7 semestras\\Objektinis programų projektavimas\\BattleshipSolution\\BattleshipServer\\obj\\",
+        "projectPath": "C:\\Users\\lauri\\Documents\\GitHub\\OPP-BattleshipSolution\\BattleshipServer\\BattleshipServer.csproj",
+        "packagesPath": "C:\\Users\\lauri\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\lauri\\Documents\\GitHub\\OPP-BattleshipSolution\\BattleshipServer\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\rugil\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\lauri\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -74,7 +71,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

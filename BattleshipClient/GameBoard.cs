@@ -1,5 +1,6 @@
-﻿using BattleshipClient.Models;
+﻿﻿using BattleshipClient.Models;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -18,15 +19,30 @@ namespace BattleshipClient
         public event Action<ShipData, Point> ShipDropped; // ship + cell
         public List<ShipDto> Ships { get; set; } = new List<ShipDto>();
 
-
         public GameBoard()
         {
             this.DoubleBuffered = true;
             this.AllowDrop = true; // priima drag
             this.DragEnter += GameBoard_DragEnter;
             this.DragDrop += GameBoard_DragDrop;
-            this.Width = CellPx * Size + LabelMargin + 1;
-            this.Height = CellPx * Size + LabelMargin + 1;
+
+            // nebenaudojame fiksuoto dydžio – Dock = Fill suveiks MainForm'e
+            this.MinimumSize = new Size(400, 400);
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            int usableW = ClientSize.Width - LabelMargin;
+            int usableH = ClientSize.Height - LabelMargin;
+            int cellW = usableW / Size;
+            int cellH = usableH / Size;
+            CellPx = Math.Min(cellW, cellH);
+
+            // ribojame maksimalų ląstelės dydį
+            if (CellPx > 40) CellPx = 40;
+
+            Invalidate();
         }
 
         public void SetCell(int x, int y, CellState state)
@@ -36,20 +52,18 @@ namespace BattleshipClient
             Invalidate(new Rectangle(x * CellPx + LabelMargin, y * CellPx + LabelMargin, CellPx, CellPx));
         }
 
-        // ✅ Gauti ląstelės būseną
         public CellState GetCell(int x, int y)
         {
             if (x < 0 || x >= Size || y < 0 || y >= Size) return CellState.Empty;
             return Cells[y, x];
         }
 
-        // ✅ Išvalyti visą lentą
         public void ClearBoard()
         {
             for (int r = 0; r < Size; r++)
                 for (int c = 0; c < Size; c++)
                     Cells[r, c] = CellState.Empty;
-            Invalidate(); // perpiešti
+            Invalidate();
         }
 
         private void GameBoard_DragEnter(object sender, DragEventArgs e)
@@ -65,8 +79,6 @@ namespace BattleshipClient
             if (e.Data.GetDataPresent(typeof(ShipData)))
             {
                 var ship = (ShipData)e.Data.GetData(typeof(ShipData));
-
-                // konvertuoti ekrano koordinatę į lentos koordinatę (atsižvelgiant į margin)
                 Point client = PointToClient(new Point(e.X, e.Y));
                 int c = (client.X - LabelMargin) / CellPx;
                 int r = (client.Y - LabelMargin) / CellPx;
@@ -85,7 +97,7 @@ namespace BattleshipClient
             using var brush = new SolidBrush(Color.Black);
             var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
 
-            // Piešti raides viršuje (A-J)
+            // raidės viršuje
             for (int c = 0; c < Size; c++)
             {
                 string letter = ((char)('A' + c)).ToString();
@@ -93,7 +105,7 @@ namespace BattleshipClient
                 g.DrawString(letter, font, brush, rect, sf);
             }
 
-            // Piešti skaičius kairėje (1-10)
+            // skaičiai kairėje
             for (int r = 0; r < Size; r++)
             {
                 string number = (r + 1).ToString();
@@ -101,7 +113,7 @@ namespace BattleshipClient
                 g.DrawString(number, font, brush, rect, sf);
             }
 
-            // Piešti langelius
+            // langeliai
             for (int r = 0; r < Size; r++)
             {
                 for (int c = 0; c < Size; c++)

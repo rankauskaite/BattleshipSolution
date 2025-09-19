@@ -14,3 +14,20 @@ C:\Users\rugil\Desktop\Universitetas\7 semestras\Objektinis programų projektavi
 C:\Users\rugil\Desktop\Universitetas\7 semestras\Objektinis programų projektavimas\BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.genruntimeconfig.cache
 C:\Users\rugil\Desktop\Universitetas\7 semestras\Objektinis programų projektavimas\BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\ref\BattleshipClient.dll
 C:\Users\rugil\Desktop\Universitetas\7 semestras\Objektinis programų projektavimas\BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.MainForm.resources
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\bin\Debug\net8.0-windows\BattleshipClient.exe
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\bin\Debug\net8.0-windows\BattleshipClient.deps.json
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\bin\Debug\net8.0-windows\BattleshipClient.runtimeconfig.json
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\bin\Debug\net8.0-windows\BattleshipClient.dll
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\bin\Debug\net8.0-windows\BattleshipClient.pdb
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.MainForm.resources
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.csproj.GenerateResource.cache
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.AssemblyInfoInputs.cache
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.AssemblyInfo.cs
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.csproj.CoreCompileInputs.cache
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.sourcelink.json
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.dll
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\refint\BattleshipClient.dll
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.pdb
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\BattleshipClient.genruntimeconfig.cache
+C:\Users\lauri\Documents\GitHub\OPP-BattleshipSolution\BattleshipClient\obj\Debug\net8.0-windows\ref\BattleshipClient.dll
