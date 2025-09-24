@@ -114,13 +114,38 @@ namespace BattleshipServer
 
             // Update ship sink status and check overall survival
             bool anyLeft = false;
+            bool wholeDown = false;
             foreach (var s in targetShips)
             {
-                if (!s.IsSunk(targetBoard)) anyLeft = true;
+                bool is_sunk = s.IsSunk(targetBoard);
+                if (!is_sunk)
+                {
+                    anyLeft = true;
+                }
+                else
+                {
+                    s.setAsSunk(targetBoard);
+                    int cy = s.Y + (s.Horizontal ? 0 : s.Len);
+                    int cx = s.X + (s.Horizontal ? s.Len : 0);
+                    wholeDown = true;
+                    if (s.Y <= y && y <= cy && s.X <= x && x <= cx)
+                    {
+                        for (int i = 0; i < s.Len; i++)
+                        {
+                            int cx1 = s.X + (s.Horizontal ? i : 0);
+                            int cy1 = s.Y + (s.Horizontal ? 0 : i);
+                            if (cx1 < 0 || cx1 >= 10 || cy1 < 0 || cy1 >= 10) break;
+                            var updateBoard = JsonSerializer.SerializeToElement(new { x=cx1, y=cy1, result = "whole_ship_down", shooterId = shooterId.ToString(), targetId = target.Id.ToString() });
+                            await Player1.SendAsync(new Models.MessageDto { Type = "shotResult", Payload = updateBoard });
+                            await Player2.SendAsync(new Models.MessageDto { Type = "shotResult", Payload = updateBoard });
+
+                        }
+                    }
+                }
             }
             if (!anyLeft) gameOver = true;
 
-            var shotResult = JsonSerializer.SerializeToElement(new { x, y, result = hit ? "hit" : "miss", shooterId = shooterId.ToString(), targetId = target.Id.ToString() });
+            var shotResult = JsonSerializer.SerializeToElement(new { x, y, result = hit && !wholeDown ? "hit" : hit && wholeDown ? "whole_ship_down" : "miss", shooterId = shooterId.ToString(), targetId = target.Id.ToString() });
             await Player1.SendAsync(new Models.MessageDto { Type = "shotResult", Payload = shotResult });
             await Player2.SendAsync(new Models.MessageDto { Type = "shotResult", Payload = shotResult });
 
@@ -174,6 +199,17 @@ namespace BattleshipServer
                 if (board[cy, cx] != 3) return false; // not hit
             }
             return true;
+        }
+
+        public void setAsSunk(int[,] board)
+        {
+            for (int i = 0; i < Len; i++)
+            {
+                int cx = X + (Horizontal ? i : 0);
+                int cy = Y + (Horizontal ? 0 : i);
+                if (cx < 0 || cx >= 10 || cy < 0 || cy >= 10) return;
+                board[cy, cx] = 4;
+            }
         }
     }
 }

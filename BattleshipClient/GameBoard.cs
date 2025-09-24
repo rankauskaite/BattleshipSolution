@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace BattleshipClient
 {
-    public enum CellState { Empty, Ship, Miss, Hit }
+    public enum CellState { Empty, Ship, Miss, Hit, Whole_ship_down, }
 
     public class GameBoard : Control
     {
@@ -36,14 +36,12 @@ namespace BattleshipClient
             Invalidate(new Rectangle(x * CellPx + LabelMargin, y * CellPx + LabelMargin, CellPx, CellPx));
         }
 
-        // ✅ Gauti ląstelės būseną
         public CellState GetCell(int x, int y)
         {
             if (x < 0 || x >= Size || y < 0 || y >= Size) return CellState.Empty;
             return Cells[y, x];
         }
 
-        // ✅ Išvalyti visą lentą
         public void ClearBoard()
         {
             for (int r = 0; r < Size; r++)
@@ -121,6 +119,9 @@ namespace BattleshipClient
                             break;
                         case CellState.Miss:
                             using (var b = new SolidBrush(ColorTranslator.FromHtml("#ffffff"))) g.FillRectangle(b, rect);
+                            break;
+                        case CellState.Whole_ship_down:
+                            using (var b = new SolidBrush(ColorTranslator.FromHtml("#781D26"))) g.FillRectangle(b, rect);
                             break;
                     }
                     g.DrawRectangle(Pens.Black, rect);

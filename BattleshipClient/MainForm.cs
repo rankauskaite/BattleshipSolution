@@ -372,9 +372,9 @@ namespace BattleshipClient
                     string shooter = dto.Payload.GetProperty("shooterId").GetString();
 
                     if (shooter == myId)
-                        enemyBoard.SetCell(x, y, res == "hit" ? CellState.Hit : CellState.Miss);
+                        enemyBoard.SetCell(x, y, res == "hit" ? CellState.Hit : res=="whole_ship_down" ? CellState.Whole_ship_down : CellState.Miss);
                     else
-                        ownBoard.SetCell(x, y, res == "hit" ? CellState.Hit : CellState.Miss);
+                        ownBoard.SetCell(x, y, res == "hit" ? CellState.Hit : res == "whole_ship_down" ? CellState.Whole_ship_down : CellState.Miss);
 
                     lblStatus.Text = $"Shot result: {res} at {x},{y}";
                     break;
