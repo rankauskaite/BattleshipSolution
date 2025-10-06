@@ -6,34 +6,40 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BattleshipClient.Models;
+using BattleshipClient.Services;
 
 namespace BattleshipClient
 {
     public class MainForm : Form
     {
         private TextBox txtServer;
-        private TextBox txtName;
+        public TextBox txtName { get; private set; }
         private Button btnConnect;
         private Button btnRandomize;
-        private Button btnReady;
+        public Button btnReady;
         private Button btnPlaceShips;
-        private Button btnGameOver; // Naujas mygtukas
-        private Label lblStatus;
-        private GameBoard ownBoard;
-        private GameBoard enemyBoard;
-        private FlowLayoutPanel shipPanel;
+        public Button btnGameOver; // Naujas mygtukas
+        public Label lblStatus;
+        public GameBoard ownBoard { get; set; }
+        public GameBoard enemyBoard { get; set; }
+        public FlowLayoutPanel shipPanel;
 
-        private NetworkClient net = new NetworkClient();
+        public NetworkClient net { get; private set; } = new NetworkClient();
 
         // state
-        private List<ShipDto> myShips = new();
-        private bool isMyTurn = false;
-        private string myId = "";
-        private string oppId = "";
+        public List<ShipDto> myShips { get; private set; } = new List<ShipDto>();
+        public bool isMyTurn = false;
+        public string myId { get; set; } = "";
+        public string oppId { get; set; } = "";
 
         // drag & drop state
-        private bool placingShips = false;
+        public bool placingShips = false;
         private bool placingHorizontal = true;
+
+        // services
+        private ShipPlacementService ShipPlacementService = new ShipPlacementService();
+        private GameService GameService = new GameService();
+        private MessageService MessageService = new MessageService();
 
         public List<ShipDto> Ships { get; set; } = new List<ShipDto>();
 
@@ -114,28 +120,9 @@ namespace BattleshipClient
 
         private void BtnPlaceShips_Click(object sender, EventArgs e)
         {
-            placingShips = true;
-            myShips.Clear();
-            ownBoard.ClearBoard();
-            shipPanel.Controls.Clear();
-            shipPanel.Visible = true;
-            btnReady.Enabled = myShips.Count == 10;
+            this.GameService.ResetMyFormOnly(this, myShips.Count == 10, true, true);
 
-            int[] shipLens = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
-            foreach (var len in shipLens)
-            {
-                var preview = new ShipPreviewControl(len) { Horizontal = placingHorizontal };
-                preview.MouseDown += (s, ev) =>
-                {
-                    if (ev.Button == MouseButtons.Left)
-                    {
-                        var p = (ShipPreviewControl)s;
-                        var data = new ShipData { Id = p.Id, Length = p.Length, Horizontal = p.Horizontal };
-                        p.DoDragDrop(data, DragDropEffects.Copy);
-                    }
-                };
-                shipPanel.Controls.Add(preview);
-            }
+            this.ShipPlacementService.HandlePlaceShip(placingHorizontal, shipPanel);
 
             lblStatus.Text = "Drag ships onto your board. Use 'R' to rotate before dragging.";
         }
@@ -146,13 +133,13 @@ namespace BattleshipClient
             int x = cell.X;
             int y = cell.Y;
 
-            if (!CanPlaceShip(x, y, ship.Length, ship.Horizontal))
+            if(!ShipPlacementService.CanPlaceShip(ownBoard, x, y, ship.Length, ship.Horizontal))
             {
                 MessageBox.Show("Invalid placement here.");
                 return;
             }
 
-            PlaceShip(x, y, ship.Length, ship.Horizontal);
+            ShipPlacementService.PlaceShip(ownBoard, x, y, ship.Length, ship.Horizontal);
 
             myShips.Add(new ShipDto
             {
@@ -174,68 +161,11 @@ namespace BattleshipClient
 
         private void OwnBoard_CellClickedForRemoval(object sender, Point p)
         {
-            foreach (var s in myShips.ToList())
+            (bool successful_removal, int len) = this.ShipPlacementService.RemoveShip(this.myShips, this.ownBoard, this.shipPanel, p);
+            if (successful_removal && len >= 0)
             {
-                int x = s.x, y = s.y, len = s.len;
-                bool horiz = s.dir == "H";
-                for (int i = 0; i < len; i++)
-                {
-                    int cx = x + (horiz ? i : 0);
-                    int cy = y + (horiz ? 0 : i);
-                    if (p.X == cx && p.Y == cy)
-                    {
-                        for (int j = 0; j < len; j++)
-                        {
-                            int px = x + (horiz ? j : 0);
-                            int py = y + (horiz ? 0 : j);
-                            ownBoard.SetCell(px, py, CellState.Empty);
-                        }
-
-                        var preview = new ShipPreviewControl(len) { Horizontal = horiz };
-                        preview.MouseDown += (s, ev) =>
-                        {
-                            if (ev.Button == MouseButtons.Left)
-                            {
-                                var p2 = (ShipPreviewControl)s;
-                                var data = new ShipData { Id = p2.Id, Length = p2.Length, Horizontal = p2.Horizontal };
-                                p2.DoDragDrop(data, DragDropEffects.Copy);
-                            }
-                        };
-                        shipPanel.Controls.Add(preview);
-                        shipPanel.Visible = true;
-
-                        myShips.Remove(s);
-                        ownBoard.Ships = myShips;
-                        ownBoard.Invalidate();
-                        btnReady.Enabled = myShips.Count == 10;
-                        lblStatus.Text = $"Removed {len}-cell ship from board.";
-                        return;
-                    }
-                }
-            }
-        }
-
-        private bool CanPlaceShip(int x, int y, int len, bool horiz)
-        {
-            if (horiz && x + len > GameBoard.Size) return false;
-            if (!horiz && y + len > GameBoard.Size) return false;
-
-            for (int i = 0; i < len; i++)
-            {
-                int cx = x + (horiz ? i : 0);
-                int cy = y + (horiz ? 0 : i);
-                if (ownBoard.GetCell(cx, cy) != CellState.Empty) return false;
-            }
-            return true;
-        }
-
-        public void PlaceShip(int x, int y, int len, bool horiz)
-        {
-            for (int i = 0; i < len; i++)
-            {
-                int cx = x + (horiz ? i : 0);
-                int cy = y + (horiz ? 0 : i);
-                ownBoard.SetCell(cx, cy, CellState.Ship);
+                btnReady.Enabled = myShips.Count == 10;
+                lblStatus.Text = $"Removed {len}-cell ship from board.";
             }
         }
 
@@ -267,7 +197,20 @@ namespace BattleshipClient
             await net.SendAsync(shot);
         }
 
-        private void BtnRandomize_Click(object sender, EventArgs e) => RandomizeShips();
+        private void BtnRandomize_Click(object sender, EventArgs e)
+        {
+            myShips.Clear();
+            (myShips, CellState[,] temp) = ShipPlacementService.RandomizeShips();
+            ownBoard.Ships = myShips;
+            ownBoard.Invalidate();
+            btnReady.Enabled = myShips.Count == 10;
+
+            for (int r = 0; r < GameBoard.Size; r++)
+                for (int c = 0; c < GameBoard.Size; c++)
+                    ownBoard.SetCell(c, r, temp[r, c]);
+
+            lblStatus.Text = $"Randomized {myShips.Count} ships.";
+        }
 
         private async void BtnReady_Click(object sender, EventArgs e)
         {
@@ -286,54 +229,6 @@ namespace BattleshipClient
             btnRandomize.Enabled = false;
         }
 
-        private void RandomizeShips()
-        {
-            var lens = new int[] { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
-            var rnd = new Random();
-            myShips.Clear();
-            var temp = new CellState[GameBoard.Size, GameBoard.Size];
-
-            foreach (var len in lens)
-            {
-                bool placed = false;
-                int tries = 0;
-                while (!placed && tries < 200)
-                {
-                    tries++;
-                    bool horiz = rnd.Next(2) == 0;
-                    int x = rnd.Next(0, GameBoard.Size - (horiz ? len - 1 : 0));
-                    int y = rnd.Next(0, GameBoard.Size - (horiz ? 0 : len - 1));
-                    bool ok = true;
-                    for (int i = 0; i < len; i++)
-                    {
-                        int cx = x + (horiz ? i : 0);
-                        int cy = y + (horiz ? 0 : i);
-                        if (temp[cy, cx] != CellState.Empty) { ok = false; break; }
-                    }
-                    if (ok)
-                    {
-                        for (int i = 0; i < len; i++)
-                        {
-                            int cx = x + (horiz ? i : 0);
-                            int cy = y + (horiz ? 0 : i);
-                            temp[cy, cx] = CellState.Ship;
-                        }
-                        myShips.Add(new ShipDto { x = x, y = y, len = len, dir = horiz ? "H" : "V" });
-                        ownBoard.Ships = myShips;
-                        ownBoard.Invalidate();
-                        btnReady.Enabled = myShips.Count == 10;
-                        placed = true;
-                    }
-                }
-            }
-
-            for (int r = 0; r < GameBoard.Size; r++)
-                for (int c = 0; c < GameBoard.Size; c++)
-                    ownBoard.SetCell(c, r, temp[r, c]);
-
-            lblStatus.Text = $"Randomized {myShips.Count} ships.";
-        }
-
         private void Net_OnMessageReceived(MessageDto dto)
         {
             if (this.InvokeRequired)
@@ -341,60 +236,7 @@ namespace BattleshipClient
                 this.BeginInvoke(new Action(() => Net_OnMessageReceived(dto)));
                 return;
             }
-
-            switch (dto.Type)
-            {
-                case "info":
-                    if (dto.Payload.TryGetProperty("message", out var me))
-                        lblStatus.Text = me.GetString();
-                    break;
-
-                case "startGame":
-                    if (dto.Payload.TryGetProperty("yourId", out var yi)) myId = yi.GetString();
-                    if (dto.Payload.TryGetProperty("opponentId", out var oi)) oppId = oi.GetString();
-                    if (dto.Payload.TryGetProperty("current", out var cur))
-                        isMyTurn = cur.GetString() == myId;
-                    lblStatus.Text = $"Game started. Opponent: {dto.Payload.GetProperty("opponent").GetString()}. Your turn: {isMyTurn}";
-                    break;
-
-                case "turn":
-                    if (dto.Payload.TryGetProperty("current", out var cur2))
-                    {
-                        isMyTurn = cur2.GetString() == myId;
-                        lblStatus.Text = isMyTurn ? "Your turn" : "Opponent's turn";
-                    }
-                    break;
-
-                case "shotResult":
-                    int x = dto.Payload.GetProperty("x").GetInt32();
-                    int y = dto.Payload.GetProperty("y").GetInt32();
-                    string res = dto.Payload.GetProperty("result").GetString();
-                    string shooter = dto.Payload.GetProperty("shooterId").GetString();
-
-                    if (shooter == myId)
-                        enemyBoard.SetCell(x, y, res == "hit" ? CellState.Hit : res=="whole_ship_down" ? CellState.Whole_ship_down : CellState.Miss);
-                    else
-                        ownBoard.SetCell(x, y, res == "hit" ? CellState.Hit : res == "whole_ship_down" ? CellState.Whole_ship_down : CellState.Miss);
-
-                    lblStatus.Text = $"Shot result: {res} at {x},{y}";
-                    break;
-
-                case "gameOver":
-                    if (dto.Payload.TryGetProperty("winnerId", out var w))
-                    {
-                        var winner = w.GetString();
-                        lblStatus.Text = winner == myId ? "You WON! Game over." : "You lost. Game over.";
-                        MessageBox.Show(lblStatus.Text, "Game Over");
-                        btnGameOver.Visible = true;
-                        isMyTurn = false;
-                    }
-                    break;
-
-                case "error":
-                    if (dto.Payload.TryGetProperty("message", out var err))
-                        MessageBox.Show(err.GetString(), "Error");
-                    break;
-            }
+            this.MessageService.HandleMessage(dto, this);
         }
 
         private async void BtnGameOver_Click(object sender, EventArgs e)
@@ -402,18 +244,7 @@ namespace BattleshipClient
             var result = MessageBox.Show("Do you want to play again?", "Game Over", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
             {
-                ownBoard.ClearBoard();
-                enemyBoard.ClearBoard();
-                myShips.Clear();
-                shipPanel.Controls.Clear();
-                shipPanel.Visible = false;
-                btnReady.Enabled = false;
-                placingShips = false;
-                isMyTurn = false;
-
-                lblStatus.Text = "Waiting for new game...";
-                var register = new { type = "register", payload = new { playerName = txtName.Text } };
-                await net.SendAsync(register);
+                this.GameService.ResetForm(this, false);
             }
             else
             {
@@ -422,7 +253,5 @@ namespace BattleshipClient
 
             btnGameOver.Visible = false;
         }
-
-        private void InitializeComponent() { }
     }
 }
